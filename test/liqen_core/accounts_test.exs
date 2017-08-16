@@ -39,4 +39,22 @@ defmodule LiqenCore.AccountsTest do
     assert {:error, changeset} = Accounts.create_user(taken_params)
     assert %{username: _} = errors_on(changeset)
   end
+
+  test "Get an existing user" do
+    {:ok, inserted_user} = Repo.insert(%User{username: "matt", name: "Yamato Ishida"})
+
+    expected = %{
+      id: inserted_user.id,
+      username: "matt",
+      name: "Yamato Ishida"
+    }
+    assert {:ok, returned} = Accounts.get_user(inserted_user.id)
+    assert returned == expected
+  end
+
+  test "Fail to get a non-existing user" do
+    Repo.insert(%User{username: "matt", name: "Yamato Ishida"})
+
+    assert {:error, :not_found} == Accounts.get_user(0)
+  end
 end

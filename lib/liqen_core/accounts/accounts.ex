@@ -46,6 +46,9 @@ defmodule LiqenCore.Accounts do
   Get a user
   """
   def get_user(id) do
+    User
+    |> get(id)
+    |> take()
   end
 
   @doc """
@@ -134,4 +137,14 @@ defmodule LiqenCore.Accounts do
     {:ok, Map.take(object, [:id, :name, :username])}
   end
   defp take(any), do: any
+
+  defp get(struct, id) do
+    case Repo.get(struct, id) do
+      %{} = object ->
+        {:ok, object}
+
+      _ ->
+        {:error, :not_found}
+    end
+  end
 end
