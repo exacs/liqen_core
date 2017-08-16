@@ -39,7 +39,7 @@ defmodule LiqenCore.Accounts do
     %User{}
     |> User.changeset(params)
     |> Repo.insert()
-    |> take([:id, :username, :name])
+    |> take()
   end
 
   @doc """
@@ -130,8 +130,8 @@ defmodule LiqenCore.Accounts do
     # linked with `user`
   end
 
-  defp take({:ok, object}, fields) do
-    {:ok, Map.take(object, fields)}
+  defp take({:ok, %User{} = object}) do
+    {:ok, Map.take(object, [:id, :name, :username])}
   end
-  defp take(any, _), do: any
+  defp take(any), do: any
 end
