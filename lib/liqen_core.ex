@@ -1,9 +1,16 @@
 defmodule LiqenCore do
   @moduledoc """
-  LiqenCore keeps the contexts that define your domain
-  and business logic.
+  This is the Elixir part of the Application.
 
-  Contexts are also responsible for managing your data, regardless
-  if it comes from the database, an external API or others.
+  LiqenCore is formed by three modules:
+
+  - `LiqenCore.Accounts` that manages everything related to user accounts and
+    its authentication (not permissions)
+
+  - `LiqenCore.CMS` that manages the content created for Liqen, including text
+    articles, videos, links, etc.
+
+  - `LiqenCore.QAMS` that manages the questions and answers of Liqen including
+    annotations.
   """
 end
