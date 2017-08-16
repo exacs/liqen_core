@@ -10,8 +10,8 @@ defmodule LiqenCore.Accounts do
     to handle with identities.
   - This module doesn't have any session mechanism like tokens.
   - This module defines a type `t:user/0` which is a "public" representation of
-    a user. Do not confuse with `LiqenCore.Accounts.User` which is an internal
-    module.
+    a user. Functions that returns a user will return this `t:user/0`. Do not
+    confuse with `LiqenCore.Accounts.User` which is an internal module.
   """
 
   @typedoc """
@@ -33,9 +33,8 @@ defmodule LiqenCore.Accounts do
 
   @doc """
   Creates a user.
-
-  See `LiqenCore.Accounts.User` to see the conditions of `params`
   """
+  @spec create_user(map) :: {:ok, user} | {:error, Ecto.Changeset.t}
   def create_user(params) do
     %User{}
     |> User.changeset(params)
