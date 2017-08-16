@@ -37,6 +37,10 @@ defmodule LiqenCore.Accounts do
   See `LiqenCore.Accounts.User` to see the conditions of `params`
   """
   def create_user(params) do
+    %User{}
+    |> User.changeset(params)
+    |> Repo.insert()
+    |> take([:id, :username, :name])
   end
 
   @doc """
@@ -126,4 +130,9 @@ defmodule LiqenCore.Accounts do
     # Otherwise, create a MediumCredential with a random generated "state"
     # linked with `user`
   end
+
+  defp take({:ok, object}, fields) do
+    {:ok, Map.take(object, fields)}
+  end
+  defp take(any, _), do: any
 end
