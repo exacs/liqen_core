@@ -1,5 +1,6 @@
 defmodule LiqenCore.Accounts do
-  alias LiqenCore.Accounts.User
+  import Ecto.Query, only: [from: 2]
+  alias LiqenCore.Accounts.{User, PasswordCredential}
   alias LiqenCore.Repo
   @moduledoc """
   Manages everything related to user accounts and its authentication.
@@ -38,6 +39,8 @@ defmodule LiqenCore.Accounts do
   def create_user(params) do
     %User{}
     |> User.changeset(params)
+    |> Ecto.Changeset.cast_assoc(
+      :password_credential, with: &PasswordCredential.changeset/2)
     |> Repo.insert()
     |> take()
   end
@@ -64,7 +67,39 @@ defmodule LiqenCore.Accounts do
   Authenticate a user giving a pair of email-password
   """
   def login_with_password(email, password) do
+    email
+    |> get_user_by_email()
+    |> check_password(password)
+    |> get_user_by_credential()
+    |> take()
+
   end
+
+  defp get_user_by_email(email) do
+    query =
+      from pc in PasswordCredential,
+      where: pc.email == ^email
+
+    case Repo.one(query) do
+      %PasswordCredential{} = pc ->
+        {:ok, pc}
+      _ ->
+        {:error, :unauthorized}
+    end
+  end
+
+  defp check_password({:ok, credential}, password) do
+    with {:error, _} <- Comeonin.Bcrypt.check_pass(credential, password) do
+      {:error, :unauthorized}
+    end
+  end
+  defp check_password(any), do: any
+
+  defp get_user_by_credential({:ok, credential}) do
+    credential = Repo.preload(credential, :user)
+    {:ok, credential.user}
+  end
+  defp get_user_by_credential(any), do: any
 
   @doc """
   Authenticate a user via medium giving a `state` and a `code`

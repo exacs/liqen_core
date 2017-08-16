@@ -4,8 +4,9 @@ defmodule LiqenCore.Repo.Migrations.CreatePasswordCredentials do
   def change do
     create table(:password_credentials) do
       add :email, :string
-      add :crypted_password, :string
-      add :user_id, :id
+      add :encrypted_password, :string
+      add :user_id, references(:users, on_delete: :delete_all),
+        null: false
 
       timestamps()
     end

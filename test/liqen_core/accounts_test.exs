@@ -12,6 +12,11 @@ defmodule LiqenCore.AccountsTest do
     name: "Sora Takenouchi"
   }
 
+  @params_matt_pc %{
+    email: "matt@digimon.jp",
+    password: "gabumon"
+  }
+
   defp insert_user(params) do
     Repo.insert(Map.merge(%User{}, params))
   end
@@ -70,5 +75,22 @@ defmodule LiqenCore.AccountsTest do
 
     assert Enum.member?(list, e1)
     assert Enum.member?(list, e2)
+  end
+
+  test "Create a user with credentials" do
+    user = Map.put(@params_matt, :password_credential, @params_matt_pc)
+    assert {:ok, returned} = Accounts.create_user(user)
+
+    assert {:ok, returned} == Accounts.login_with_password(
+      @params_matt_pc.email, @params_matt_pc.password
+    )
+  end
+
+  test "Authenticate with a wrong password credential" do
+    user = Map.put(@params_matt, :password_credential, @params_matt_pc)
+    assert {:ok, _} = Accounts.create_user(user)
+    assert {:error, :unauthorized} = Accounts.login_with_password(
+      @params_matt_pc.email, "Pikachu"
+    )
   end
 end

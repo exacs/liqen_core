@@ -1,7 +1,7 @@
 defmodule LiqenCore.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
-  alias LiqenCore.Accounts.User
+  alias LiqenCore.Accounts.{User, PasswordCredential}
   @moduledoc """
   User represents the essential identity of a user.
 
@@ -16,6 +16,7 @@ defmodule LiqenCore.Accounts.User do
   schema "users" do
     field :username, :string
     field :name, :string
+    has_one :password_credential, PasswordCredential
 
     timestamps()
   end
