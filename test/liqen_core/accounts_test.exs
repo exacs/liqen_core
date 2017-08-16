@@ -57,4 +57,20 @@ defmodule LiqenCore.AccountsTest do
 
     assert {:error, :not_found} == Accounts.get_user(0)
   end
+
+  test "Get all users when there is no user" do
+    assert {:ok, []} == Accounts.list_users()
+  end
+
+  test "Get all users" do
+    {:ok, u1} = Repo.insert(%User{username: "matt", name: "Yamato Ishida"})
+    {:ok, u2} = Repo.insert(%User{username: "sora", name: "Sora Takenouchi"})
+
+    e1 = %{id: u1.id, username: "matt", name: "Yamato Ishida"}
+    e2 = %{id: u2.id, username: "sora", name: "Sora Takenouchi"}
+    assert {:ok, list} = Accounts.list_users()
+
+    assert Enum.member?(list, e1)
+    assert Enum.member?(list, e2)
+  end
 end

@@ -55,6 +55,9 @@ defmodule LiqenCore.Accounts do
   List all users
   """
   def list_users do
+    User
+    |> get_all()
+    |> take()
   end
 
   @doc """
@@ -133,6 +136,14 @@ defmodule LiqenCore.Accounts do
     # linked with `user`
   end
 
+  defp take(list) when is_list(list) do
+    list =
+      list
+      |> Enum.map(&take(&1))
+      |> Enum.map(fn {:ok, obj} -> obj end)
+
+    {:ok, list}
+  end
   defp take({:ok, %User{} = object}) do
     {:ok, Map.take(object, [:id, :name, :username])}
   end
@@ -146,5 +157,10 @@ defmodule LiqenCore.Accounts do
       _ ->
         {:error, :not_found}
     end
+  end
+  defp get_all(struct) do
+    struct
+    |> Repo.all()
+    |> Enum.map(fn obj -> {:ok, obj} end)
   end
 end
