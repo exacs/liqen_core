@@ -1,0 +1,14 @@
+{
+  "skip_files": [
+    "test",
+    "lib/liqen_core_web.ex",
+    "lib/liqen_core_web/channels/user_socket.ex",
+    "lib/liqen_core_web/endpoint.ex",
+    "lib/liqen_core_web/gettext.ex",
+    "lib/liqen_core_web/views/error_helpers.ex",
+    "lib/liqen_core_web/views/error_view.ex",
+    "lib/liqen_core.ex",
+    "lib/liqen_core/application.ex",
+    "lib/liqen_core/repo.ex"
+  ]
+}
