@@ -3,20 +3,24 @@ defmodule LiqenCore.AccountsTest do
   alias LiqenCore.Accounts
   alias LiqenCore.Accounts.User
 
+  @params_matt %{
+    username: "matt",
+    name: "Yamato Ishida"
+  }
+  @params_sora %{
+    username: "sora",
+    name: "Sora Takenouchi"
+  }
+
+  defp insert_user(params) do
+    Repo.insert(Map.merge(%User{}, params))
+  end
+
   test "Create a valid user" do
-    valid_params = %{
-      username: "matt",
-      name: "Yamato Ishida"
-    }
+    assert {:ok, returned} = Accounts.create_user(@params_matt)
 
-    assert {:ok, user} = Accounts.create_user(valid_params)
-
-    expected = %{
-      id: user.id,
-      username: "matt",
-      name: "Yamato Ishida"
-    }
-    assert expected == user
+    expected = Map.put(@params_matt, :id, returned.id)
+    assert expected == returned
   end
 
   test "Fail to create a user without some parameters" do
@@ -29,31 +33,24 @@ defmodule LiqenCore.AccountsTest do
   end
 
   test "Fail to create a user because its name is taken" do
-    taken_params = %{
-      username: "matt",
-      name: "Yamato Ishida"
-    }
-
-    Repo.insert(%User{username: "matt", name: "Yamato Ishida"})
+    insert_user(@params_matt)
+    taken_params = Map.put(@params_matt, :name, "I am not Matt")
 
     assert {:error, changeset} = Accounts.create_user(taken_params)
     assert %{username: _} = errors_on(changeset)
   end
 
   test "Get an existing user" do
-    {:ok, inserted_user} = Repo.insert(%User{username: "matt", name: "Yamato Ishida"})
+    {:ok, inserted} = insert_user(@params_matt)
+    expected = Map.put(@params_matt, :id, inserted.id)
 
-    expected = %{
-      id: inserted_user.id,
-      username: "matt",
-      name: "Yamato Ishida"
-    }
-    assert {:ok, returned} = Accounts.get_user(inserted_user.id)
+    assert {:ok, returned} = Accounts.get_user(inserted.id)
     assert returned == expected
   end
 
   test "Fail to get a non-existing user" do
-    Repo.insert(%User{username: "matt", name: "Yamato Ishida"})
+    insert_user(@params_matt)
+    insert_user(@params_sora)
 
     assert {:error, :not_found} == Accounts.get_user(0)
   end
@@ -63,11 +60,12 @@ defmodule LiqenCore.AccountsTest do
   end
 
   test "Get all users" do
-    {:ok, u1} = Repo.insert(%User{username: "matt", name: "Yamato Ishida"})
-    {:ok, u2} = Repo.insert(%User{username: "sora", name: "Sora Takenouchi"})
+    {:ok, u1} = insert_user(@params_matt)
+    {:ok, u2} = insert_user(@params_sora)
 
-    e1 = %{id: u1.id, username: "matt", name: "Yamato Ishida"}
-    e2 = %{id: u2.id, username: "sora", name: "Sora Takenouchi"}
+    e1 = Map.put(@params_matt, :id, u1.id)
+    e2 = Map.put(@params_sora, :id, u2.id)
+
     assert {:ok, list} = Accounts.list_users()
 
     assert Enum.member?(list, e1)
