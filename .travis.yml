@@ -4,7 +4,7 @@ elixir:
   - 1.4.2
 
 otp_release:
-  - 19.3
+  - 20.0
 
 addons:
   postgresql: '9.4'
@@ -15,7 +15,6 @@ services:
 before_script:
   - cp config/test.travis.exs config/test.exs
   - psql -c 'create database travis_ci_test;' -U postgres
-  - mix deps.compile idna
   - mix ecto.create
   - mix ecto.migrate
 
