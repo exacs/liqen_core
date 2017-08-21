@@ -75,6 +75,18 @@ defmodule LiqenCore.CMS do
     |> take()
   end
 
+  @doc """
+  Creates an entry of type `external_html`
+  """
+  def create_external_html(params) do
+    params = Map.put(params, :entry_type, "external_html")
+
+    %Entry{}
+    |> Entry.changeset(params)
+    |> Repo.insert()
+    |> take()
+  end
+
   defp take(list) when is_list(list) do
     list =
       list
@@ -84,7 +96,7 @@ defmodule LiqenCore.CMS do
     {:ok, list}
   end
   defp take({:ok, %Entry{} = object}) do
-    {:ok, Map.take(object, [:id, :title])}
+    {:ok, Map.take(object, [:id, :title, :entry_type, :content])}
   end
   defp take(any), do: any
 

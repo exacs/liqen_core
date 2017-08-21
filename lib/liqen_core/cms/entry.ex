@@ -13,15 +13,15 @@ defmodule LiqenCore.CMS.Entry do
 
   schema "entries" do
     field :title, :string
-    # field :entry_type, :string
+    field :entry_type, :string
 
     timestamps()
   end
 
   def changeset(%Entry{} = entry, attrs) do
     entry
-    |> cast(attrs, [:title])
+    |> cast(attrs, [:title, :entry_type])
     |> validate_required([:title])
-    # |> validate_inclusion(:entry_type, ["external_html", "medium"])
+    |> validate_inclusion(:entry_type, ["external_html", "medium"])
   end
 end

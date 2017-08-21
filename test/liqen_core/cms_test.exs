@@ -14,7 +14,22 @@ defmodule LiqenCore.CMSTest do
   test "Create a valid entry" do
     assert {:ok, returned} = CMS.create_entry(@params_entry)
 
-    expected = Map.put(@params_entry, :id, returned.id)
+    expected =
+      @params_entry
+      |> Map.put(:id, returned.id)
+      |> Map.put(:entry_type, nil)
+
+    assert expected == returned
+  end
+
+  test "Create a external_html entry" do
+    assert {:ok, returned} = CMS.create_external_html(@params_entry)
+
+    expected =
+      @params_entry
+      |> Map.put(:id, returned.id)
+      |> Map.put(:entry_type, "external_html")
+
     assert expected == returned
   end
 
@@ -27,7 +42,10 @@ defmodule LiqenCore.CMSTest do
 
   test "Get an existing entry" do
     {:ok, inserted} = insert_entry(@params_entry)
-    expected = Map.put(@params_entry, :id, inserted.id)
+    expected =
+      @params_entry
+      |> Map.put(:id, inserted.id)
+      |> Map.put(:entry_type, nil)
 
     assert {:ok, returned} = CMS.get_entry(inserted.id)
     assert returned == expected
@@ -47,8 +65,15 @@ defmodule LiqenCore.CMSTest do
     {:ok, i1} = insert_entry(@params_entry)
     {:ok, i2} = insert_entry(@params_entry)
 
-    e1 = Map.put(@params_entry, :id, i1.id)
-    e2 = Map.put(@params_entry, :id, i2.id)
+    e1 =
+      @params_entry
+      |> Map.put(:id, i1.id)
+      |> Map.put(:entry_type, nil)
+
+    e2 =
+      @params_entry
+      |> Map.put(:id, i2.id)
+      |> Map.put(:entry_type, nil)
 
     assert {:ok, list} = CMS.list_entries()
 
