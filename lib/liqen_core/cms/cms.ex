@@ -1,5 +1,6 @@
 defmodule LiqenCore.CMS do
-  alias LiqenCore.CMS.Entry
+  alias LiqenCore.CMS.{Entry,
+                       ExternalHTML}
   alias LiqenCore.Repo
   @moduledoc """
   Content Management System of Liqen Core.
@@ -79,11 +80,15 @@ defmodule LiqenCore.CMS do
   Creates an entry of type `external_html`
   """
   def create_external_html(params) do
-    params = Map.put(params, :entry_type, "external_html")
+    params =
+      params
+      |> Map.put(:entry_type, "external_html")
 
     %Entry{}
     |> Entry.changeset(params)
+    |> Ecto.Changeset.cast_assoc(:external_html, with: &ExternalHTML.changeset/2)
     |> Repo.insert()
+    |> put_content()
     |> take()
   end
 
@@ -96,7 +101,13 @@ defmodule LiqenCore.CMS do
     {:ok, list}
   end
   defp take({:ok, %Entry{} = object}) do
-    {:ok, Map.take(object, [:id, :title, :entry_type, :content])}
+    entry = Map.take(object, [:id, :title, :entry_type])
+    {:ok, content} = take({:ok, Map.get(object, :content)})
+
+    {:ok, Map.put(entry, :content, content)}
+  end
+  defp take({:ok, %ExternalHTML{} = object}) do
+    {:ok, Map.take(object, [:uri])}
   end
   defp take(any), do: any
 
@@ -114,4 +125,19 @@ defmodule LiqenCore.CMS do
     |> Repo.all()
     |> Enum.map(fn obj -> {:ok, obj} end)
   end
+
+  defp put_external_html(%Ecto.Changeset{valid?: true} = changeset) do
+    changeset
+
+  end
+
+  defp put_content({:ok, %Entry{} = object}) do
+    content =
+      case Map.get(object, :entry_type) do
+        "external_html" -> Map.get(object, :external_html)
+      end
+
+    {:ok, Map.put(object, :content, content)}
+  end
+  defp put_content(any), do: any
 end

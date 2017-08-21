@@ -1,7 +1,8 @@
 defmodule LiqenCore.CMS.Entry do
   use Ecto.Schema
   import Ecto.Changeset
-  alias LiqenCore.CMS.Entry
+  alias LiqenCore.CMS.{Entry,
+                       ExternalHTML}
   @moduledoc """
   Entry represents a piece of content.
 
@@ -14,6 +15,7 @@ defmodule LiqenCore.CMS.Entry do
   schema "entries" do
     field :title, :string
     field :entry_type, :string
+    has_one :external_html, ExternalHTML
 
     timestamps()
   end
