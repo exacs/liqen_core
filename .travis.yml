@@ -22,4 +22,4 @@ env:
   - MIX_ENV=test
 
 script:
-  - mix do deps.get, compile
+  - mix do deps.get, compile, test
