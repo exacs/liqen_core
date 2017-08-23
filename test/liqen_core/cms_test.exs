@@ -28,6 +28,47 @@ defmodule LiqenCore.CMSTest do
     }
   }
 
+  @params_medium_post %{
+    title: "Digimon adventures 02",
+    medium_post: %{
+      title: "Digimon adventures 02",
+      uri: "https://en.wikipedia.org/wiki/Digimon_Adventure_02",
+      publishing_date: %DateTime{year: 2017,
+                                 month: 2,
+                                 day: 27,
+                                 hour: 23,
+                                 minute: 0,
+                                 second: 0,
+                                 time_zone: "GMT",
+                                 zone_abbr: "GMT",
+                                 utc_offset: 0,
+                                 std_offset: 0},
+      tags: [],
+      copyright_cesion: true,
+    }
+  }
+
+  @expected_medium_post %{
+    title: "Digimon adventures 02",
+    entry_type: "medium_post",
+    content: %{
+      title: "Digimon adventures 02",
+      uri: "https://en.wikipedia.org/wiki/Digimon_Adventure_02",
+      publishing_date: %DateTime{year: 2017,
+                                 month: 2,
+                                 day: 27,
+                                 hour: 23,
+                                 minute: 0,
+                                 second: 0,
+                                 time_zone: "Etc/UTC",
+                                 zone_abbr: "UTC",
+                                 utc_offset: 0,
+                                 std_offset: 0},
+      tags: [],
+      license: nil
+    }
+  }
+
   defp insert_entry(params) do
     Repo.insert(Map.merge(%Entry{}, params))
   end
@@ -60,6 +101,17 @@ defmodule LiqenCore.CMSTest do
     assert {:error, changeset} = CMS.create_external_html(empty_params)
     assert %{external_html: _} = errors_on(changeset)
   end
+
+  test "Create a medium_post entry" do
+    assert {:ok, returned} = CMS.create_medium_post(@params_medium_post)
+
+    expected =
+      @expected_medium_post
+      |> Map.put(:id, returned.id)
+
+    assert expected == returned
+  end
+
 
   test "Fail to create a entry without some parameters" do
     empty_params = %{}

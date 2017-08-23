@@ -2,7 +2,8 @@ defmodule LiqenCore.CMS.Entry do
   use Ecto.Schema
   import Ecto.Changeset
   alias LiqenCore.CMS.{Entry,
-                       ExternalHTML}
+                       ExternalHTML,
+                       MediumPost}
   @moduledoc """
   Entry represents a piece of content.
 
@@ -16,6 +17,7 @@ defmodule LiqenCore.CMS.Entry do
     field :title, :string
     field :entry_type, :string
     has_one :external_html, ExternalHTML
+    has_one :medium_post, MediumPost
 
     timestamps()
   end
@@ -24,6 +26,6 @@ defmodule LiqenCore.CMS.Entry do
     entry
     |> cast(attrs, [:title, :entry_type])
     |> validate_required([:title])
-    |> validate_inclusion(:entry_type, ["external_html", "medium"])
+    |> validate_inclusion(:entry_type, ["external_html", "medium_post"])
   end
 end

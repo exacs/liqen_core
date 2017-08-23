@@ -1,6 +1,7 @@
 defmodule LiqenCore.CMS do
   alias LiqenCore.CMS.{Entry,
-                       ExternalHTML}
+                       ExternalHTML,
+                       MediumPost}
   alias LiqenCore.Repo
   @moduledoc """
   Content Management System of Liqen Core.
@@ -80,16 +81,38 @@ defmodule LiqenCore.CMS do
   Creates an entry of type `external_html`
   """
   def create_external_html(params) do
-    params =
-      params
-      |> Map.put(:entry_type, "external_html")
-
-    %Entry{}
-    |> Entry.changeset(params)
-    |> Ecto.Changeset.cast_assoc(:external_html, with: &ExternalHTML.changeset/2)
+    params
+    |> prepare_entry_params(:external_html)
     |> Repo.insert()
     |> put_content()
     |> take()
+  end
+
+  @doc """
+  Creates an entry of type `medium_post`
+  """
+  def create_medium_post(params) do
+    params
+    |> prepare_entry_params(:medium_post)
+    |> Repo.insert()
+    |> put_content()
+    |> take()
+  end
+
+  defp prepare_entry_params(params, type) do
+    {name, module} =
+      case type do
+        :external_html ->
+          {"external_html", ExternalHTML}
+        :medium_post ->
+          {"medium_post", MediumPost}
+      end
+
+    params = Map.put(params, :entry_type, name)
+
+    %Entry{}
+    |> Entry.changeset(params)
+    |> Ecto.Changeset.cast_assoc(type, with: &module.changeset/2)
   end
 
   defp take(list) when is_list(list) do
@@ -109,6 +132,9 @@ defmodule LiqenCore.CMS do
   defp take({:ok, %ExternalHTML{} = object}) do
     {:ok, Map.take(object, [:uri])}
   end
+  defp take({:ok, %MediumPost{} = object}) do
+    {:ok, Map.take(object, [:uri, :title, :publishing_date, :license, :tags])}
+  end
   defp take(any), do: any
 
   defp get(struct, id) do
@@ -126,15 +152,12 @@ defmodule LiqenCore.CMS do
     |> Enum.map(fn obj -> {:ok, obj} end)
   end
 
-  defp put_external_html(%Ecto.Changeset{valid?: true} = changeset) do
-    changeset
-
-  end
-
   defp put_content({:ok, %Entry{} = object}) do
     content =
       case Map.get(object, :entry_type) do
         "external_html" -> Map.get(object, :external_html)
+        "medium_post" -> Map.get(object, :medium_post)
+        _ -> nil
       end
 
     {:ok, Map.put(object, :content, content)}
