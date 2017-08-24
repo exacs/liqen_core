@@ -10,6 +10,7 @@ defmodule LiqenCore.CMS.Author do
   """
   schema "cms_authors" do
     field :role, :string
+    belongs_to :user, LiqenCore.Accounts.User
 
     timestamps()
   end
