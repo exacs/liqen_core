@@ -1,7 +1,9 @@
 defmodule LiqenCore.CMS do
   alias LiqenCore.CMS.{Entry,
                        ExternalHTML,
-                       MediumPost}
+                       MediumPost,
+                       Author}
+  alias LiqenCore.Accounts
   alias LiqenCore.Repo
   @moduledoc """
   Content Management System of Liqen Core.
@@ -97,6 +99,19 @@ defmodule LiqenCore.CMS do
     |> Repo.insert()
     |> put_content()
     |> take()
+  end
+
+  def ensure_author_exists(%Accounts.User{} = user) do
+    %Author{user_id: user.id}
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.unique_constraint(:user_id)
+    |> Repo.insert()
+    |> handle_existing_author()
+  end
+
+  defp handle_existing_author({:ok, author}), do: author
+  defp handle_existing_author({:error, changeset}) do
+    Repo.get_by!(Author, user_id: changeset.data.user_id)
   end
 
   defp prepare_entry_params(params, type) do
