@@ -2,6 +2,7 @@ defmodule LiqenCore.CMSTest do
   use LiqenCore.DataCase
   alias LiqenCore.CMS
   alias LiqenCore.CMS.{Entry}
+  alias LiqenCore.Accounts
 
   @params_entry %{
     title: "Digimon adventures",
@@ -156,5 +157,32 @@ defmodule LiqenCore.CMSTest do
 
     assert Enum.member?(list, e1)
     assert Enum.member?(list, e2)
+  end
+
+  test "Create a new Author" do
+    {:ok, user} = Repo.insert(%Accounts.User{username: "sora",
+                                             name: "Sora Takenouchi"})
+    author =
+      user
+      |> CMS.ensure_author_exists()
+      |> Repo.preload(:user)
+
+    assert user == author.user
+  end
+
+  test "Create an author twice" do
+    {:ok, user} = Repo.insert(%Accounts.User{username: "sora",
+                                             name: "Sora Takenouchi"})
+    author =
+      user
+      |> CMS.ensure_author_exists()
+      |> Repo.preload(:user)
+
+    author2 =
+      user
+      |> CMS.ensure_author_exists()
+      |> Repo.preload(:user)
+
+    assert author == author2
   end
 end
