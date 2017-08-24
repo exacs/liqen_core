@@ -3,7 +3,8 @@ defmodule LiqenCore.CMS.Entry do
   import Ecto.Changeset
   alias LiqenCore.CMS.{Entry,
                        ExternalHTML,
-                       MediumPost}
+                       MediumPost,
+                       Author}
   @moduledoc """
   Entry represents a piece of content.
 
@@ -18,6 +19,7 @@ defmodule LiqenCore.CMS.Entry do
     field :entry_type, :string
     has_one :external_html, ExternalHTML
     has_one :medium_post, MediumPost
+    belongs_to :author, Author
 
     timestamps()
   end
