@@ -85,7 +85,12 @@ defmodule LiqenCore.CMSTest do
   end
 
   test "Create a external_html entry" do
-    assert {:ok, returned} = CMS.create_external_html(@params_external_html)
+    {:ok, user} = Repo.insert(%Accounts.User{username: "sora",
+                                             name: "Sora Takenouchi"})
+    {:ok, returned} =
+      user
+      |> CMS.ensure_author_exists()
+      |> CMS.create_external_html(@params_external_html)
 
     expected =
       @expected_external_html
@@ -99,12 +104,24 @@ defmodule LiqenCore.CMSTest do
       title: "Digimon Adventures 02",
       external_html: %{}
     }
-    assert {:error, changeset} = CMS.create_external_html(empty_params)
+
+    {:ok, user} = Repo.insert(%Accounts.User{username: "sora",
+                                             name: "Sora Takenouchi"})
+    {:error, changeset} =
+      user
+      |> CMS.ensure_author_exists()
+      |> CMS.create_external_html(empty_params)
+
     assert %{external_html: _} = errors_on(changeset)
   end
 
   test "Create a medium_post entry" do
-    assert {:ok, returned} = CMS.create_medium_post(@params_medium_post)
+    {:ok, user} = Repo.insert(%Accounts.User{username: "sora",
+                                             name: "Sora Takenouchi"})
+    {:ok, returned} =
+      user
+      |> CMS.ensure_author_exists()
+      |> CMS.create_medium_post(@params_medium_post)
 
     expected =
       @expected_medium_post

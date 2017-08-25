@@ -82,9 +82,10 @@ defmodule LiqenCore.CMS do
   @doc """
   Creates an entry of type `external_html`
   """
-  def create_external_html(params) do
+  def create_external_html(%Author{} = author, params) do
     params
     |> prepare_entry_params(:external_html)
+    |> Ecto.Changeset.put_change(:author_id, author.id)
     |> Repo.insert()
     |> put_content()
     |> take()
@@ -93,9 +94,10 @@ defmodule LiqenCore.CMS do
   @doc """
   Creates an entry of type `medium_post`
   """
-  def create_medium_post(params) do
+  def create_medium_post(%Author{} = author, params) do
     params
     |> prepare_entry_params(:medium_post)
+    |> Ecto.Changeset.put_change(:author_id, author.id)
     |> Repo.insert()
     |> put_content()
     |> take()
