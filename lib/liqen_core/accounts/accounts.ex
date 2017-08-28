@@ -110,6 +110,8 @@ defmodule LiqenCore.Accounts do
   `get_medium_login_data/1`
   """
   def login_with_medium(state, code) do
+    state
+    |> get_medium_credential_from_state()
     # Ensure that there is an MediumCredential with the `state`
     # Get that MediumCredential object
 
@@ -217,5 +219,13 @@ defmodule LiqenCore.Accounts do
     struct
     |> Repo.all()
     |> Enum.map(fn obj -> {:ok, obj} end)
+  end
+
+  # Steps for Logging in using Medium
+  defp get_medium_credential_from_state(state) do
+    case Repo.get_by(MediumCredential, state: state) do
+      nil -> {:error, :not_found}
+      credential -> {:ok, credential}
+    end
   end
 end
