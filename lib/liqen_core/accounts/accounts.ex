@@ -113,6 +113,7 @@ defmodule LiqenCore.Accounts do
     state
     |> get_medium_credential_from_state()
     |> get_long_lived_token(code)
+    |> get_medium_user_data()
     # Ensure that there is an MediumCredential with the `state`
     # Get that MediumCredential object
 
@@ -250,13 +251,35 @@ defmodule LiqenCore.Accounts do
         status_code: status_code} = response
 
       case status_code do
-        401 ->
-          {:error, json_body}
-
         201 ->
           Poison.decode(json_body)
+        _ ->
+          {:error, json_body}
       end
     end
   end
   defp get_long_lived_token(any, _), do: any
+
+  defp get_medium_user_data({:ok, %{"access_token" => access_token}}) do
+    uri = "https://api.medium.com/v1/me"
+    headers = %{
+      "Content-Type" => "application/json",
+      "Accept" => "application/json",
+      "Authorization" => "Bearer #{access_token}"
+    }
+
+    with {:ok, response} <- HTTPoison.get(uri, headers) do
+      %{body: json_body,
+        status_code: status_code} = response
+
+      case status_code do
+        200 ->
+          Poison.decode(json_body)
+        _ ->
+          {:error, json_body}
+
+      end
+    end
+  end
+  defp get_medium_user_data(any), do: any
 end
