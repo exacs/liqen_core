@@ -54,7 +54,8 @@ defmodule LiqenCore.Mixfile do
       {:ex_doc, "~> 0.14", only: :dev, runtime: false},
       {:excoveralls, "~> 0.6", only: :test},
       {:comeonin, "~> 4.0"},
-      {:bcrypt_elixir, "~> 0.12.0"}
+      {:bcrypt_elixir, "~> 0.12.0"},
+      {:httpoison, "~> 0.13"}
     ]
   end
 
