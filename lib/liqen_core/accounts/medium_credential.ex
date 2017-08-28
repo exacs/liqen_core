@@ -1,6 +1,8 @@
 defmodule LiqenCore.Accounts.MediumCredential do
   use Ecto.Schema
   import Ecto.Changeset
+  alias LiqenCore.Accounts.{MediumCredential,
+                            User}
   @moduledoc """
   LiqenCredential stores the information to identify a person using the
   information stored at Medium
@@ -19,6 +21,8 @@ defmodule LiqenCore.Accounts.MediumCredential do
   end
 
   @doc false
-  def changeset() do
+  def changeset(%MediumCredential{} = credential, attrs) do
+    credential
+    |> cast(attrs, [:medium_id, :username, :name, :url, :image_url])
   end
 end

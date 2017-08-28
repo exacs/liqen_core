@@ -114,6 +114,8 @@ defmodule LiqenCore.Accounts do
     |> get_medium_credential_from_state()
     |> get_long_lived_token(code)
     |> get_medium_user_data()
+    |> update_medium_data()
+    |> ensure_user_exists()
     # Ensure that there is an MediumCredential with the `state`
     # Get that MediumCredential object
 
@@ -231,7 +233,7 @@ defmodule LiqenCore.Accounts do
     end
   end
 
-  defp get_long_lived_token({:ok, _}, code) do
+  defp get_long_lived_token({:ok, credential}, code) do
     uri = "https://api.medium.com/v1/tokens"
     body = [
       code: code,
@@ -246,40 +248,87 @@ defmodule LiqenCore.Accounts do
       "Accept" => "application/json"
     }
 
-    with {:ok, response} <- HTTPoison.post(uri, {:form, body}, headers) do
-      %{body: json_body,
-        status_code: status_code} = response
-
-      case status_code do
-        201 ->
-          Poison.decode(json_body)
-        _ ->
-          {:error, json_body}
-      end
+    with {:ok, %{"access_token" => access_token}} <-
+      uri
+      |> HTTPoison.post({:form, body}, headers)
+      |> handle_json_response(201)
+    do
+      {:ok, credential, access_token}
     end
   end
+
   defp get_long_lived_token(any, _), do: any
 
-  defp get_medium_user_data({:ok, %{"access_token" => access_token}}) do
+  defp get_medium_user_data({:ok, credential, access_token}) do
     uri = "https://api.medium.com/v1/me"
     headers = %{
       "Content-Type" => "application/json",
       "Accept" => "application/json",
       "Authorization" => "Bearer #{access_token}"
     }
-
-    with {:ok, response} <- HTTPoison.get(uri, headers) do
-      %{body: json_body,
-        status_code: status_code} = response
-
-      case status_code do
-        200 ->
-          Poison.decode(json_body)
-        _ ->
-          {:error, json_body}
-
-      end
+    with {:ok, %{"data" => data}} <-
+      uri
+      |> HTTPoison.get(headers)
+      |> handle_json_response(200)
+    do
+      {:ok, credential, data}
     end
   end
   defp get_medium_user_data(any), do: any
+
+  defp handle_json_response({:ok, response}, status_code) do
+    %{body: json_body,
+      status_code: code} = response
+
+    case code do
+      ^status_code ->
+        Poison.decode(json_body)
+      _ ->
+        {:error, json_body}
+    end
+  end
+  defp handle_json_response(any, _), do: any
+
+  defp update_medium_data({:ok, credential, data}) do
+    %{
+      "id" => medium_id,
+      "imageUrl" => image_url,
+      "name" => name,
+      "url" => url,
+      "username" => username
+    } = data
+
+    attrs = %{
+      medium_id: medium_id,
+      username: username,
+      name: name,
+      url: url,
+      image_url: image_url
+    }
+
+    credential
+    |> MediumCredential.changeset(attrs)
+    |> Repo.update()
+  end
+  defp update_medium_data(any), do: any
+
+  def ensure_user_exists({:ok, %MediumCredential{} = credential}) do
+    %{user: user,
+      username: username} = Repo.preload(credential, :user)
+
+    params = %{
+      username: username <> Base.encode16(:crypto.strong_rand_bytes(3))
+    }
+
+    case user do
+      nil ->
+        %User{}
+        |> User.changeset(params)
+        |> Repo.insert()
+        |> take()
+      _ ->
+        {:ok, user}
+        |> take()
+    end
+  end
 end
