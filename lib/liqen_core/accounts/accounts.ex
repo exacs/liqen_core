@@ -247,7 +247,6 @@ defmodule LiqenCore.Accounts do
 
     with {:ok, response} <- HTTPoison.post(uri, {:form, body}, headers) do
       %{body: json_body,
-        headers: headers,
         status_code: status_code} = response
 
       case status_code do
