@@ -30,7 +30,7 @@ defmodule LiqenCore.Mixfile do
   def application do
     [
       mod: {LiqenCore.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :crypto]
     ]
   end
 

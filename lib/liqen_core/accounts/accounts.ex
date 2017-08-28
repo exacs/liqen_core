@@ -1,6 +1,8 @@
 defmodule LiqenCore.Accounts do
   import Ecto.Query, only: [from: 2]
-  alias LiqenCore.Accounts.{User, PasswordCredential}
+  alias LiqenCore.Accounts.{User,
+                            PasswordCredential,
+                            MediumCredential}
   alias LiqenCore.Repo
   @moduledoc """
   Manages everything related to user accounts and its authentication.
@@ -148,7 +150,14 @@ defmodule LiqenCore.Accounts do
   """
   def get_medium_login_data do
     # Create a MediumCredential with a random generated "state"
+    state = Base.encode16(:crypto.strong_rand_bytes(8))
+
+    %MediumCredential{state: state}
+    |> Ecto.Changeset.change()
+    |> Repo.insert()
+
     # Leave all the fields empty
+    state
   end
 
   @doc """
@@ -169,6 +178,17 @@ defmodule LiqenCore.Accounts do
 
     # Otherwise, create a MediumCredential with a random generated "state"
     # linked with `user`
+    state = Base.encode16(:crypto.strong_rand_bytes(8))
+
+    case Repo.get_by(MediumCredential, user_id: user_id) do
+      nil -> %MediumCredential{user_id: user_id}
+      credential -> credential
+    end
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_change(:state, state)
+    |> Repo.insert_or_update!()
+
+    state
   end
 
   defp take(list) when is_list(list) do
