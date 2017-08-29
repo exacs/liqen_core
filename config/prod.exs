@@ -27,6 +27,15 @@ config :liqen_core, LiqenCore.Repo,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
   ssl: true
 
+config :guardian, Guardian,
+  allowed_algos: ["HS512"],
+  verify_module: Guardian.JWT,
+  issuer: "Liqen Core",
+  ttl: { 30, :days },
+  allowed_drift: 2000,
+  verify_issuer: true,
+  secret_key: System.get_env("GUARDIAN_SECRET_KEY"),
+  serializer: LiqenCore.Accounts.GuardianSerializer
 
 # Do not print debug messages in production
 config :logger, level: :info
