@@ -296,7 +296,7 @@ defmodule LiqenCore.Accounts do
   end
   defp handle_json_response(any, _), do: any
 
-  defp update_medium_data({:ok, credential, data}) do
+  defp update_medium_data({:ok, new_credential, data}) do
     %{
       "id" => medium_id,
       "imageUrl" => image_url,
@@ -313,9 +313,18 @@ defmodule LiqenCore.Accounts do
       image_url: image_url
     }
 
-    credential
-    |> MediumCredential.changeset(attrs)
-    |> Repo.update()
+    case Repo.get_by(MediumCredential, medium_id: medium_id) do
+      nil ->
+        new_credential
+        |> MediumCredential.changeset(attrs)
+        |> Repo.update()
+
+      old_credential ->
+        old_credential
+        |> MediumCredential.changeset(attrs)
+        |> Repo.update()
+
+    end
   end
   defp update_medium_data(any), do: any
 
@@ -329,9 +338,16 @@ defmodule LiqenCore.Accounts do
 
     case user do
       nil ->
-        %User{}
-        |> User.changeset(params)
-        |> Repo.insert()
+        {:ok, user} =
+          %User{}
+          |> User.changeset(params)
+          |> Repo.insert()
+
+        credential
+        |> Ecto.Changeset.change(user_id: user.id)
+        |> Repo.update()
+
+        {:ok, user}
       _ ->
         {:ok, user}
     end

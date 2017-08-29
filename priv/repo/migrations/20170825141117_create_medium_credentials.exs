@@ -15,5 +15,6 @@ defmodule LiqenCore.Repo.Migrations.CreateMediumCredentials do
     end
 
     create unique_index(:medium_credentials, [:user_id])
+    create unique_index(:medium_credentials, [:medium_id])
   end
 end
