@@ -73,7 +73,7 @@ defmodule LiqenCore.Accounts do
     |> get_user_by_email()
     |> check_password(password)
     |> get_user_by_credential()
-    |> take()
+    |> create_token()
 
   end
 
@@ -95,13 +95,19 @@ defmodule LiqenCore.Accounts do
       {:error, :unauthorized}
     end
   end
-  defp check_password(any), do: any
+  defp check_password(any, _), do: any
 
   defp get_user_by_credential({:ok, credential}) do
     credential = Repo.preload(credential, :user)
     {:ok, credential.user}
   end
   defp get_user_by_credential(any), do: any
+
+  defp create_token({:ok, %User{} = user}) do
+    {:ok, jwt, _} = Guardian.encode_and_sign(user, :access)
+    {:ok, jwt}
+  end
+  defp create_token(any), do: any
 
   @doc """
   Authenticate a user via medium giving a `state` and a `code`
@@ -116,6 +122,7 @@ defmodule LiqenCore.Accounts do
     |> get_medium_user_data()
     |> update_medium_data()
     |> ensure_user_exists()
+    |> create_token()
     # Ensure that there is an MediumCredential with the `state`
     # Get that MediumCredential object
 
@@ -325,10 +332,9 @@ defmodule LiqenCore.Accounts do
         %User{}
         |> User.changeset(params)
         |> Repo.insert()
-        |> take()
       _ ->
         {:ok, user}
-        |> take()
     end
   end
+  def ensure_user_exists(any), do: any
 end
