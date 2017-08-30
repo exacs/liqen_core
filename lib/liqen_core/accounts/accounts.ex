@@ -123,30 +123,6 @@ defmodule LiqenCore.Accounts do
     |> update_medium_data()
     |> ensure_user_exists()
     |> create_token()
-    # Ensure that there is an MediumCredential with the `state`
-    # Get that MediumCredential object
-
-    # Get a long-lived access token
-    # to do it, make a form-encoded POST request
-
-    # On success, we will get a token
-    # do GET https://api.medium.com/v1/me to get medium user data
-
-    # Collect the "id", "username", "name", "url" and "imageUrl" fields.
-    # Ensure that `MediumCredential.medium_id` is the same as `id` returned
-    # in the previous step or blank
-
-    # Update MediumCredential data (username, name, url and imageUrl) with the
-    # collected
-
-    # If the MediumCredential is already linked to a user, return that user
-
-    # If not, create new a user with the data:
-    # - username = collected username + MediumCredential.id (to ensure
-    #   non-duplicates)
-    # - name = collected name
-    #
-    # return the created new user
   end
 
   @doc """
