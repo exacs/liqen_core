@@ -70,14 +70,17 @@ defmodule LiqenCore.Accounts do
   """
   def login_with_password(email, password) do
     email
-    |> get_user_by_email()
+    |> get_password_credential()
     |> check_password(password)
     |> get_user_by_credential()
     |> create_token()
-
   end
 
-  defp get_user_by_email(email) do
+  @doc """
+  Get a password credential given an e-mail address
+  """
+  @spec get_password_credential(String.t) :: {:ok, map} | {:error, :unauthorized}
+  def get_password_credential(email) do
     query =
       from pc in PasswordCredential,
       where: pc.email == ^email
@@ -90,24 +93,34 @@ defmodule LiqenCore.Accounts do
     end
   end
 
-  defp check_password({:ok, credential}, password) do
+  @doc """
+  Check if a given password matches with the valid one stored in a
+  PasswordCredential object
+  """
+  @spec check_password(any, String.t) :: {:ok, map} | {:error, :unauthorized}
+  def check_password({:ok, credential}, password) do
     with {:error, _} <- Comeonin.Bcrypt.check_pass(credential, password) do
       {:error, :unauthorized}
     end
   end
-  defp check_password(any, _), do: any
+  def check_password(any, _), do: any
 
-  defp get_user_by_credential({:ok, credential}) do
+  @doc """
+  Get a user given its credential
+  """
+  def get_user_by_credential({:ok, credential}) do
     credential = Repo.preload(credential, :user)
     {:ok, credential.user}
   end
-  defp get_user_by_credential(any), do: any
+  def get_user_by_credential(any), do: any
 
-  defp create_token({:ok, %User{} = user}) do
-    {:ok, jwt, _} = Guardian.encode_and_sign(user, :access)
-    {:ok, jwt}
+  @doc """
+  Create a token from a User object
+  """
+  def create_token({:ok, %User{} = user}) do
+    Guardian.encode_and_sign(user, :access)
   end
-  defp create_token(any), do: any
+  def create_token(any), do: any
 
   @doc """
   Authenticate a user via medium giving a `state` and a `code`
@@ -208,7 +221,9 @@ defmodule LiqenCore.Accounts do
     |> Enum.map(fn obj -> {:ok, obj} end)
   end
 
-  # Steps for Logging in using Medium
+  @doc """
+  Retrieve a MediumCredential
+  """
   defp get_medium_credential_from_state(state) do
     case Repo.get_by(MediumCredential, state: state) do
       nil -> {:error, :not_found}
@@ -216,7 +231,10 @@ defmodule LiqenCore.Accounts do
     end
   end
 
-  defp get_long_lived_token({:ok, credential}, code) do
+  @doc """
+  Request a Medium Long-lived token from its API
+  """
+  def get_long_lived_token({:ok, credential}, code) do
     uri = "https://api.medium.com/v1/tokens"
     body = [
       code: code,
@@ -239,10 +257,12 @@ defmodule LiqenCore.Accounts do
       {:ok, credential, access_token}
     end
   end
+  def get_long_lived_token(any, _), do: any
 
-  defp get_long_lived_token(any, _), do: any
-
-  defp get_medium_user_data({:ok, credential, access_token}) do
+  @doc """
+  Get current user data from a Medium Token
+  """
+  def get_medium_user_data({:ok, credential, access_token}) do
     uri = "https://api.medium.com/v1/me"
     headers = %{
       "Content-Type" => "application/json",
@@ -257,7 +277,7 @@ defmodule LiqenCore.Accounts do
       {:ok, credential, data}
     end
   end
-  defp get_medium_user_data(any), do: any
+  def get_medium_user_data(any), do: any
 
   defp handle_json_response({:ok, response}, status_code) do
     %{body: json_body,
@@ -272,7 +292,10 @@ defmodule LiqenCore.Accounts do
   end
   defp handle_json_response(any, _), do: any
 
-  defp update_medium_data({:ok, new_credential, data}) do
+  @doc """
+  Update a MediumCredential
+  """
+  def update_medium_data({:ok, new_credential, data}) do
     %{
       "id" => medium_id,
       "imageUrl" => image_url,
@@ -302,8 +325,11 @@ defmodule LiqenCore.Accounts do
 
     end
   end
-  defp update_medium_data(any), do: any
+  def update_medium_data(any), do: any
 
+  @doc """
+  Given a MediumCredential, creates a User if necessary
+  """
   def ensure_user_exists({:ok, %MediumCredential{} = credential}) do
     %{user: user,
       username: username} = Repo.preload(credential, :user)
