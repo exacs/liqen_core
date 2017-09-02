@@ -1,5 +1,7 @@
 defmodule LiqenCore.QAMS.Tag do
   use Ecto.Schema
+  alias LiqenCore.QAMS.{Question,
+                        QuestionTag}
 
   @moduledoc """
   Tag
@@ -7,6 +9,7 @@ defmodule LiqenCore.QAMS.Tag do
 
   schema "tags" do
     field :title, :string
+    many_to_many :questions, Question, join_through: QuestionTag
 
     timestamps()
   end
