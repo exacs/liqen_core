@@ -2,8 +2,10 @@ defmodule LiqenCore.Repo.Migrations.CreateQuestions do
   use Ecto.Migration
 
   def change do
-    add :title, :string
+    create table(:questions) do
+      add :title, :string
 
-    timestamps()
+      timestamps()
+    end
   end
 end
