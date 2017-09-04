@@ -1,5 +1,7 @@
 defmodule LiqenCore.QAMS.QuestionTag do
   use Ecto.Schema
+  alias LiqenCore.QAMS.{Question,
+                        Tag}
 
   @moduledoc """
   QuestionTag represents the many-to-many relation betweeen questions and tags
